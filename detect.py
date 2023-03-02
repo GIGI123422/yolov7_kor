@@ -1,6 +1,7 @@
 import argparse
 import time
 from pathlib import Path
+from os.path import splitext
 
 import cv2
 import torch
@@ -29,6 +30,7 @@ def detect(save_img=False):
     set_logging()
     device = select_device(opt.device)
     half = device.type != 'cpu'  # half precision only supported on CUDA
+    half = False # 2023.03.02 GeForce GTX 1650
 
     # Load model
     model = attempt_load(weights, map_location=device)  # load FP32 model
@@ -138,8 +140,13 @@ def detect(save_img=False):
 
             # Save results (image with detections)
             if save_img:
-                if dataset.mode == 'image':
-                    cv2.imwrite(save_path, im0)
+                if dataset.mode == 'image':                    
+                    # cv2.imwrite(save_path, im0)
+                    extension = splitext(save_path)[1] # CV2 한글경로 (유니코드)로 인한 문제
+                    result, encoded_img = cv2.imencode(extension, im0)
+                    if result:
+                        with open(save_path, mode='w+b') as f:
+                            encoded_img.tofile(f)
                     print(f" The image with the result is saved in: {save_path}")
                 else:  # 'video' or 'stream'
                     if vid_path != save_path:  # new video

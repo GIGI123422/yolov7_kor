@@ -183,7 +183,9 @@ class LoadImages:  # for inference
         else:
             # Read image
             self.count += 1
-            img0 = cv2.imread(path)  # BGR
+            # img0 = cv2.imread(path)  # BGR
+            img0 = np.fromfile(path, np.uint8) # cv2의 한글 경로 에러 발생, unicode 
+            img0 = cv2.imdecode(img0, cv2.IMREAD_COLOR)
             assert img0 is not None, 'Image Not Found ' + path
             #print(f'image {self.count}/{self.nf} {path}: ', end='')
 
